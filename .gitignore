@@ -1,0 +1,12 @@
+# Entornos virtuales
+venv/
+env/
+.env
+
+# Archivos de Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Outputs
+*.log
