@@ -1,73 +1,40 @@
-# Guía de Contribución y Reglas del Proyecto GenAI
+```markdown
+# Guía de Contribución y Reglas del Proyecto GenAI 🛠️
 
-¡Bienvenidos al proyecto! [TBD]
+¡Bienvenidos al repositorio base del sistema Entity Resolution! 
 
-Para no romper el código de los demás y cumplir con los requisitos técnicos, todos debemos seguir estas reglas **estrictas**:
+Dado que trabajamos con una arquitectura de IA compleja (motores vectoriales locales, llamadas a APIs externas y flujos agénticos), necesitamos mantener el código blindado. Todos los contribuyentes deben seguir estas reglas **estrictas**:
 
-## 1. Reglas de Git (Flujo de trabajo)
+## 1. Reglas de Git (Flujo de Trabajo)
 * **NUNCA** trabajes directamente en `main` ni en `develop`.
-* Para empezar tu caso de uso, crea una rama desde `develop`: `git checkout -b feature/nombre-de-tu-caso`.
-* Cuando termines o quieras revisión, sube tu rama (`git push origin feature/tu-rama`) y avisa al administrador del proyecto para hacer la integración a `develop`.
+* Para añadir un nuevo agente, test o capa de datos, crea una rama desde `develop`: `git checkout -b feature/nombre-de-tu-mejora`.
+* Cuando tu código pase las pruebas de evaluación (`src/evaluation_suite.py`), sube tu rama y solicita una *Pull Request* (PR) para la integración.
 
-## 2. Reglas de Código y Rutas
-* **Rutas relativas:** Todas las rutas utilizadas en el código deben ser rutas relativas. (Ej. `../data/raw/csv_files/`). ¡Nadie debe usar `C:/Users/...`!
-* **Modularidad:** El notebook debe poder ejecutarse de principio a fin sin intervención manual. Si creas funciones largas de limpieza o modelos, guárdalas en archivos `.py` dentro de la carpeta `src/`.
+## 2. Estructura de Directorios (Importante)
+Mantén la limpieza arquitectónica. No guardes archivos fuera de su lugar:
+* `data/`: Solo para archivos CSV de entrada (`Capital_Calls_DB.csv`).
+* `vectorstore/`: Generado automáticamente por FAISS/BM25. **Nunca hagas commit** de los archivos dentro de esta carpeta (ya están en el `.gitignore`).
+* `src/`: Lógica central (Pipelines, Indexadores, Agentes y Evaluadores).
+* `notebooks/`: Exclusivamente para demos en `.ipynb` o análisis exploratorio.
 
-## 3. Estructura de un Caso de Uso
-TBD
+## 3. Reglas de Código y Seguridad
+* **Gestión de Secretos:** NUNCA subas claves de API (Tavily, Groq, OpenAI) al repositorio. Asegúrate de que el archivo `.env` permanece en el `.gitignore`.
+* **Rutas Relativas:** Utiliza `src.config.Config` para el manejo de rutas (ej. `Config.CSV_PATH`). Están diseñadas con `pathlib` para ser multiplataforma (Linux, Windows, Mac).
+* **Dependencias:** Si instalas una nueva librería de LangChain, Streamlit o Machine Learning en tu entorno virtual, es obligatorio actualizar el listado global ejecutando: `pip freeze > requirements.txt` (o añadiéndolo manualmente).
 
-## 📝 Tareas Pendientes (¡Elige la tuya!)
-Mientras el Caso de Uso 1: TBD
+## 4. Pruebas y Validación (Testing de Agentes)
+Antes de solicitar un *Merge*, debes demostrar que no has roto las reglas de negocio críticas del banco:
+1. Asegúrate de que el entorno virtual está activo.
+2. Ejecuta `python3 src/evaluation_suite.py`.
+3. Para aprobar la PR, el **Safety Rate** no debe caer por debajo del **90%**. Si tu cambio en los *prompts* provoca que el LLM empiece a alucinar (falsos positivos entre distintas series de fondos), la PR será rechazada.
 
-* **Caso de Uso 2:** TBD
+## 🔄 Resolución de Conflictos (Merge Conflicts)
 
-## 🔄 Cómo mantener tu rama actualizada con `develop` / `master`
+A medida que varios ingenieros toquen los *prompts* o los esquemas de Pydantic, habrá conflictos. Sigue estos pasos para solucionarlos:
 
-A medida que avanza el proyecto, iremos subiendo scripts útiles (como `tools.py` o herramientas de scraping) a las ramas principales (`develop` o `master`). 
-
-Para poder usar estas nuevas herramientas en tu propia rama **sin perder tu trabajo**, necesitas actualizar tu rama local. Sigue estos 4 sencillos pasos:
-
-### Paso 1: Guarda tu trabajo actual
-Antes de traer código de otros, asegúrate de que tu rama está "limpia" (sin archivos modificados sueltos).
-```bash
-git status
-git add .
-git commit -m "Guardo mi progreso antes de actualizar la rama"
-```
-
-### Paso 2: Descarga las novedades del servidor
-Esto actualiza tu rama local con todo lo que ha pasado en el repositorio en la nube (GitHub, GitLab, etc.).
-```bash
-git fetch origin
-```
-
-### Paso 3: Actualiza tu versión local de la rama principal
-Muévete a la rama principal y descárgate los últimos cambios.
-```bash
-git checkout main
-git pull origin main
-```
-
-### Paso 4: Fusiona las novedades en TU rama
-Vuelve a tu rama de trabajo y tráete todo lo nuevo que acaba de llegar a main.
-```bash
-# Cambia "mi-rama" por el nombre real de tu rama
-git checkout mi-rama  
-git merge main
-```
-
-⚠️ ¡Ayuda, tengo un conflicto de merge!
-A veces, Git te avisará de que hay un "Conflicto" en el Paso 4. Esto es normal y solo significa que tú y otro compañero habéis modificado el mismo archivo en la misma línea.
-
-Abre tu editor de código (ej. VS Code). Verás el archivo en rojo.
-
-El editor te mostrará tu código y el código que viene de develop. Haz clic en "Aceptar cambios entrantes", "Aceptar ambos", o edítalo manualmente.
-
-Guarda el archivo.
-
-Dile a Git que el conflicto está resuelto:
-```bash
-# Cambia "mi-rama" por el nombre real de tu rama
-git add nombre_del_archivo_resuelto.py
-git commit -m "Resuelvo conflicto tras actualizar con main"
-```
+1. **Guarda tu trabajo:** `git add .` y `git commit -m "WIP"`
+2. **Actualiza la rama principal:** `git fetch origin`
+3. **Descarga novedades:** `git checkout develop` y `git pull origin develop`
+4. **Fusiona en tu rama:** `git checkout tu-rama` y `git merge develop`
+5. **Resuelve en el editor:** Abre tu VS Code, revisa las zonas resaltadas en rojo y acepta los cambios correctos.
+6. **Informa la solución:** `git add .` y `git commit -m "Conflictos resueltos con develop"`
