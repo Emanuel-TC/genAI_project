@@ -102,20 +102,20 @@ class EntityResolutionPipeline:
         parser = JsonOutputParser(pydantic_object=EntityResolutionOutput)
         
         template = """Eres un sistema experto en Entity Resolution para banca de inversión.
-Tu tarea es comparar el nombre del Limited Partner (LP) entrante (Query) contra el contexto proporcionado por la base de datos interna.
+    Tu tarea es comparar el nombre del Limited Partner (LP) entrante (Query) contra el contexto proporcionado por la base de datos interna.
 
-CONTEXTO INTERNO DISPONIBLE:
-{context}
+    CONTEXTO INTERNO DISPONIBLE:
+    {context}
 
-QUERY DE ENTRADA (LP a resolver):
-{query}
+    QUERY DE ENTRADA (LP a resolver):
+    {query}
 
-REGLAS ESTRICTAS DE NEGOCIO:
-1. Analiza si el LP de entrada corresponde a una entidad del contexto (ignorando errores tipográficos, diferencias entre 'L.P.' y 'LP', o diéresis).
-2. Si la entidad entrante difiere por números romanos o series (ej. 'Fund II' vs 'Fund III'), SON ENTIDADES DISTINTAS. is_match debe ser False.
-3. Evalúa la correspondencia para calcular el confidence_score.
-4. REGLA CRÍTICA: Si el confidence_score es INFERIOR A 0.85, debes forzar OBLIGATORIAMENTE el campo "trigger_human_review" a true.
-5. Devuelve única y exclusivamente el JSON sin texto adicional (nada de backticks de markdown).
+    REGLAS ESTRICTAS DE NEGOCIO:
+    1. Analiza si el LP de entrada corresponde a una entidad del contexto (ignorando errores tipográficos, diferencias entre 'L.P.' y 'LP', o diéresis).
+    2. Si la entidad entrante difiere por números romanos o series (ej. 'Fund II' vs 'Fund III'), SON ENTIDADES DISTINTAS. is_match debe ser False.
+    3. Evalúa la correspondencia para calcular el confidence_score.
+    4. REGLA CRÍTICA: Si el confidence_score es INFERIOR A 0.85, debes forzar OBLIGATORIAMENTE el campo "trigger_human_review" a true.
+    5. Devuelve única y exclusivamente el JSON sin texto adicional (nada de backticks de markdown).
 
 {format_instructions}
 """
