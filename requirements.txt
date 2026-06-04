@@ -4,3 +4,4 @@ pandas==3.0.3
 langchain-core
 langchain-community
 faiss-cpu
+FlashRank
