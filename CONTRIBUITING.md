@@ -1,4 +1,3 @@
-```markdown
 # Guía de Contribución y Reglas del Proyecto GenAI 🛠️
 
 ¡Bienvenidos al repositorio base del sistema Entity Resolution! 
