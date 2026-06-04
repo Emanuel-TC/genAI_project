@@ -35,6 +35,21 @@ class LPEnrichmentOutput(BaseModel):
     enrichment_success: bool = Field(
         description="True si se encontró información financiera útil, False si la entidad no parece existir o no hay datos relevantes."
     )
+    sp_rating: str = Field(
+        description="Rating S&P sugerido si se menciona, o 'NR' (Not Rated)."
+        )
+    moodys_rating: str = Field(
+        description="Rating Moody's sugerido si se menciona, o 'NR'."
+        )
+    confidence_score: float = Field(
+        description="Nivel de confianza (0.0 a 1.0) de la información recopilada en la web."
+        )
+    justification: str = Field(
+        description="Justificación de los valores sugeridos basándose en los textos leídos."
+        )
+    sources: list[str] = Field(
+        description="Lista de URLs utilizadas como referencia."
+        )
 
 # =========================================================================
 # 2. AGENTE DE BÚSQUEDA Y EXTRACCIÓN

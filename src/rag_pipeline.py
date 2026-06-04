@@ -45,6 +45,9 @@ class EntityResolutionOutput(BaseModel):
     metadata_extracted: dict = Field(
         description="Diccionario con country, investor_type, sp_rating y moodys_rating recuperados del contexto. Vacío si no hay match."
     )
+    explanation: str = Field(
+        description="Explicación detallada de la decisión: por qué es un match o por qué se rechaza debido a diferencias en series o geografía."
+    )
 
 
 # =========================================================================
