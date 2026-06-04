@@ -1,7 +1,17 @@
 dotenv==0.9.9
 numpy==2.4.6
 pandas==3.0.3
+langchain
 langchain-core
 langchain-community
+langchain-openai
+langchain-groq
+langchain-google-genai
+langchain-huggingface
+torch
+torchvision
+torchaudio --index-url https://download.pytorch.org/whl/cpu
+sentence-transformers
 faiss-cpu
 FlashRank
+rank_bm25
