@@ -75,3 +75,32 @@ python3 src/evaluation_suite.py
 
 ## 🤝 Contribuir
 Si deseas colaborar en la mejora de este sistema agéntico, por favor revisa nuestro archivo [CONTRIBUITING.md](CONTRIBUITING.md) para conocer las políticas de ramas y estándares de desarrollo.
+
+### Arquitectura de Agentes
+```mermaid
+graph TD
+    %% Nodos principales
+    Usuario([👤 Analista de Inversión])
+    Matching[🕵️‍♂️ Matching Agent<br>RAG + Reranking]
+    BBDD[(🗄️ BBDD Corporativa<br>FAISS + BM25)]
+    Research[🌐 Research Agent<br>Tavily Search API]
+    Validation[🛡️ Validation Agent<br>Streamlit UI]
+    Update[(🔄 Update Index)]
+
+    %% Flujo de ejecución
+    Usuario -->|Ingresa nombre de LP| Matching
+    Matching <-->|Consulta y extrae contexto| BBDD
+    
+    %% Decisiones del Matching Agent
+    Matching -->|Confidence >= 0.85| Match[✅ Match Aprobado<br>Muestra Datos]
+    Matching -->|Confidence < 0.85<br>o Entidad no encontrada| Research
+    
+    %% Flujo del Research Agent
+    Research -->|Navega en internet| Web((🌐 Internet))
+    Web -->|Extrae Sede, Tipo, Ratings| Research
+    Research -->|Propone Borrador JSON| Validation
+    
+    %% Flujo del Validation Agent
+    Match --> Validation
+    Validation -->|Analista aprueba el alta| Update
+    Update -->|Reentrena IA en tiempo real| BBDD
