@@ -13,7 +13,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_classic.retrievers import EnsembleRetriever
-from langchain.retrievers import ContextualCompressionRetriever
+from langchain_classic.retrievers.contextual_compression import ContextualCompressionRetriever
 from langchain_community.document_compressors import FlashrankRerank
 
 from src.config import Config
