@@ -62,7 +62,8 @@ class LPNamePreprocessor:
             )
             
         # Cargar manteniendo tipos string para las columnas de identidades financieras
-        df = pd.read_csv(target_path, dtype={'LP Name': str})
+        #df = pd.read_csv(target_path, dtype={'LP Name': str})
+        df = pd.read_csv(target_path, dtype={'LP Name': str}, on_bad_lines='skip')
         
         if 'LP Name' not in df.columns:
             raise KeyError(
