@@ -31,17 +31,11 @@ class DBIndexer:
         self.faiss_path = Config.VECTORSTORE_DIR / "faiss_index"
         self.bm25_path = Config.VECTORSTORE_DIR / "bm25_index.pkl"
         
-        # Inicialización Inteligente de Embeddings (Evita Crash sin API Key)
-        if Config.OPENAI_API_KEY:
-            from langchain_openai import OpenAIEmbeddings
-            self.embeddings = OpenAIEmbeddings(
-                api_key=Config.OPENAI_API_KEY,
-                model=Config.EMBEDDING_MODEL
-            )
-        else:
-            print("⚠️ AVISO: No se detectó OPENAI_API_KEY. Fallback a Embeddings Locales de HuggingFace.")
-            from langchain_huggingface import HuggingFaceEmbeddings
-            self.embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        # --- SOLUCIÓN SENIOR: FORZAR SIEMPRE EL MODELO LOCAL ---
+        # Ignoramos el .env y usamos HuggingFace para garantizar que la demo 
+        # sea 100% gratuita y nunca falle por cuotas de API de embeddings.
+        from langchain_huggingface import HuggingFaceEmbeddings
+        self.embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
     def generate_documents(self) -> list[Document]:
         """
