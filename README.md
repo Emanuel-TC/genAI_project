@@ -72,3 +72,6 @@ Para ejecutar la batería de pruebas en consola y visualizar el Dashboard de Mé
 ```bash
 python3 src/evaluation_suite.py
 ```
+
+## 🤝 Contribuir
+Si deseas colaborar en la mejora de este sistema agéntico, por favor revisa nuestro archivo [CONTRIBUITING.md](CONTRIBUITING.md) para conocer las políticas de ramas y estándares de desarrollo.
