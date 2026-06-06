@@ -76,31 +76,65 @@ python3 src/evaluation_suite.py
 ## 🤝 Contribuir
 Si deseas colaborar en la mejora de este sistema agéntico, por favor revisa nuestro archivo [CONTRIBUITING.md](CONTRIBUITING.md) para conocer las políticas de ramas y estándares de desarrollo.
 
-### Arquitectura de Agentes
+### 🧠 Arquitectura y Documentación de Agentes
+
+El núcleo de este proyecto reside en una arquitectura multiagente orquestada mediante LangChain. Cada agente tiene responsabilidades únicas, opera de forma asíncrona cuando es invocado y se comunica a través del estado de la interfaz de usuario.
+
+#### Diagrama de Flujo del Sistema
 ```mermaid
 graph TD
     %% Nodos principales
-    Usuario([👤 Analista de Inversión])
-    Matching[🕵️‍♂️ Matching Agent<br>RAG + Reranking]
-    BBDD[(🗄️ BBDD Corporativa<br>FAISS + BM25)]
-    Research[🌐 Research Agent<br>Tavily Search API]
-    Validation[🛡️ Validation Agent<br>Streamlit UI]
-    Update[(🔄 Update Index)]
-
-    %% Flujo de ejecución
-    Usuario -->|Ingresa nombre de LP| Matching
-    Matching <-->|Consulta y extrae contexto| BBDD
+    Usuario([👤 Analista de Inversión]) -->|Ingresa LP| UI[🛡️ Validation Agent<br>app.py]
+    UI -->|Envía nombre LP| Matching[🕵️‍♂️ Matching Agent<br>src/rag_pipeline.py]
+    Matching <-->|Consulta híbrida| BBDD[(🗄️ BBDD Corporativa<br>FAISS + BM25)]
     
-    %% Decisiones del Matching Agent
-    Matching -->|Confidence >= 0.85| Match[✅ Match Aprobado<br>Muestra Datos]
-    Matching -->|Confidence < 0.85<br>o Entidad no encontrada| Research
+    %% Camino 1: Éxito en BD Interna
+    Matching -->|Confidence >= 0.85| Match[✅ Match Aprobado]
+    Match -->|Muestra validación y JSON| UI
     
-    %% Flujo del Research Agent
-    Research -->|Navega en internet| Web((🌐 Internet))
+    %% Camino 2: Falla BD Interna -> Enriquecimiento
+    Matching -->|Confidence < 0.85<br>o Entidad no encontrada| Research[🌐 Research Agent<br>src/enrichment_agent.py]
+    Research -->|Búsqueda web| Web((🌐 Internet API))
     Web -->|Extrae Sede, Tipo, Ratings| Research
-    Research -->|Propone Borrador JSON| Validation
+    Research -->|Propone Borrador JSON| UI
     
-    %% Flujo del Validation Agent
-    Match --> Validation
-    Validation -->|Analista aprueba el alta| Update
-    Update -->|Reentrena IA en tiempo real| BBDD
+    %% Aprobación Humana (Solo para nuevas altas)
+    UI -.->|Analista revisa y hace clic en 'Aprobar'| Update[(🔄 Insertar en BBDD y<br>Reentrenar FAISS)]
+```
+
+### 1. 🕵️‍♂️ Matching Agent (El Experto Interno)
+
+**Ubicación:** src/rag_pipeline.py
+
+**Propósito:** Resolver entidades evaluando variaciones de formato, abreviaturas y diferencias críticas de negocio.
+
+**Mecanismo:** 
+1. Recibe la entrada del usuario y la limpia (src/preprocessor.py).
+2. Ejecuta una búsqueda híbrida (Semántica con HuggingFace + Léxica con BM25).
+3. Comprime y reordena los resultados usando FlashRank (Cross-Encoder).
+4. Inyecta el mejor candidato en un LLM (Groq/Llama-3.3) a temperature=0.0.
+5. Guardarraíl: Calcula un Confidence Score. Si es menor a 0.85 (ej. detecta diferencias en "Series" o "Clases"), bloquea el match automático.
+
+### 2. 🌐 Research Agent (El Investigador Externo)
+
+**Ubicación:** src/enrichment_agent.py
+
+**Propósito:** Actuar como plan de contingencia inteligente (Fallback) para enriquecer la base de datos con entidades inexistentes.
+
+**Mecanismo:** 
+
+1. Solo se invoca si el Matching Agent rechaza la entidad.
+2. Utiliza Tool Calling ejecutando la API de Tavily para rastrear la huella financiera del LP en la web.
+3. Extrae y estructura mediante Pydantic los valores sugeridos: País, LP Type, Ratings (S&P/Moody's), Justificación y URLs de referencia.
+
+### 3. 🛡️ Validation Agent (El Supervisor Humano)
+
+**Ubicación:** app.py (Streamlit)
+
+**Propósito:** Orquestar el flujo de trabajo y garantizar el control humano (Human-in-the-Loop).
+
+**Mecanismo:** 
+
+1. Mantiene el estado de la sesión (st.session_state) para que la pantalla no se recargue perdiendo el contexto.
+2. Evalúa las salidas de los otros dos agentes. Si recibe un borrador del Research Agent, congela la inserción de datos.
+3. Expone el botón de "Aprobar Alta", cediendo la responsabilidad legal y de Compliance al analista financiero antes de escribir en el CSV corporativo y reentrenar los índices vectoriales.
